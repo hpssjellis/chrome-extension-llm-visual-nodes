@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gemini Nano D3.js Graph & Summarizer</title>
+    <link rel="stylesheet" href="sidepanel.css">
+    <script src="d3.min.js"></script>  
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .my-button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+        }
+        .my-button:hover {
+            background-color: #d0d0d0;
+        }
+        .my-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .my-textarea {
+            width: 98%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .my-output {
+            background-color: #fff;
+        }
+        .my-status {
+            font-family: monospace;
+            background-color: #e9e9e9;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .my-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        .myD3Button {
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+        .myD3Button:hover {
+            background-color: #e8e8e8;
+        }
+        .node circle {
+            cursor: pointer;
+        }
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+        .arbitrary-link {
+            fill: none;
+            stroke: #5d5d5d;
+            stroke-width: 2.5px;
+        }
+        .line-text {
+            fill: #555;
+            font-family: sans-serif;
+            font-size: 10px;
+        }
+        .my-movable-dialog {
+            position: fixed;
+            z-index: 999;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            bottom: 20px; /* Position from the bottom */
+            right: 20px; /* Position from the right */
+            transform: translateX(-50%);
+            display: none;
+        }
+        .my-movable-dialog-header {
+            cursor: grab;
+            padding: 5px;
+            background-color: #ddd;
+            text-align: center;
+            border-radius: 3px;
+            margin-bottom: 10px;
+        }
+
+            .my-movable-dialog2 {
+            position: fixed;
+            z-index: 999;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            bottom: 20px; /* Position from the bottom */
+            right: 20px; /* Position from the right */
+           /* transform: translateX(-50%);  */
+            display: none;    /* lets remove it from view  */
+            resize: both; /* Allows the user to resize the dialog */
+            overflow: auto; /* Adds scrollbars if content overflows */
+        }
+        .my-movable-dialog-header2 {
+            cursor: grab;
+            padding: 5px;
+            background-color: #ddd;
+            text-align: center;
+            border-radius: 3px;
+            margin-bottom: 10px;
+        }
+
+        
+        .my-movable-dialog input, .my-movable-dialog button {
+            display: block;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .my-movable-dialog textarea {
+            width: calc(100% - 20px);
+            resize: both;
+            overflow: auto; /* Adds scrollbars if content overflows */
+        }
+        .node.selected circle {
+            fill: crimson !important;
+        }
+        #mySvgContainer {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc; /* optional, for visibility */
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gemini Nano Graph & Summarizer</h1>
+
+        <div class="section">
+            <h2>Web Page Summarizer</h2>
+            <div class="button-group">
+                <button id="showAllBtn" class="my-button">Summarize All Text</button>
+                <button id="showSelectedBtn" class="my-button">Summarize Selected Text</button>
+            </div>
+            <div id="statusMessage" class="status-message"></div>
+            <textarea id="contentArea" rows="10" placeholder="Summarized content will appear here..."></textarea>
+        </div>
+
+        <div class="section">
+            <h2>Graph Generation (Gemini Nano)</h2>
+            <textarea id="myInputPrompt" rows="5" placeholder="Enter your prompt here...">Based on the following text, generate a single JSON object. The object must contain two top-level keys: "nodes" and "links". The "nodes" value must be an array of objects, each with "id" (a unique ordered number), "parentId" (a string corresponding to its parent's id, or an empty string for the root node which in this case will have the name of the main subject from the provided text), "name" (a descriptive string), and "fact" (a string containing a brief interesting fact about the node). The "links" value must be an empty array []. Do not include any text outside of the JSON object.</textarea>
+            <div class="button-group">
+                <button id="myLoadButton" class="my-button my-load-button">Load Model</button>
+                <button id="myStreamButton" class="my-button my-generate-button">Generate Graph</button>
+                <button id="mySaveButton" class="my-button my-save-button">Save JSON Output</button>
+            </div>
+            <div id="myDiv01" class="status-message"></div>
+            <textarea id="myOutput" rows="5" readonly placeholder="Gemini Nano output will appear here..."></textarea>
+        </div>
+
+        <div class="section">
+            <h2>Interactive D3.js Graph</h2>
+            <div class="button-group d3-buttons">
+                <button id="myLoadD3Button" class="my-button">Load Graph from File</button>
+                <input type="file" id="myFileLoad" accept=".json" style="display: none;">
+                <button id="mySaveD3Button" class="my-button">Save Graph Data</button>
+                <button id="myAddD3Button" class="my-button">Add Node</button>
+                <button id="myEditButton" class="my-button">Edit Node</button>
+                <button id="myDeleteD3Button" class="my-button">Delete Selected</button>
+                <button id="myAddLineD3Button" class="my-button">Add Line</button>
+                <button id="myRefreshColorsButton" class="my-button">Refresh Colors</button>
+                <button id="myFitScreenD3Button" class="my-button">Fit to Screen</button>
+                <select id="myLayoutSelector" class="my-select">
+                    <option value="tree">Tree Layout</option>
+                    <option value="radial">Radial Layout</option>
+                    <option value="cluster">Cluster Layout</option>
+                    <option value="personal">Personal Layout</option>
+                </select>
+            </div>
+            <div id="myShowDiv" class="status-message"></div>
+            <svg id="mySvgContainer"></svg>
+        </div>
+
+        <div id="myEditNodeDialog" class="my-dialog" style="display: none;">
+            <div class="my-movable-dialog-header">Edit Node</div>
+            <label for="myEditNodeName">Name:</label>
+            <input type="text" id="myEditNodeName"><br>
+            <label for="myEditNodeFact">Fact:</label>
+            <textarea id="myEditNodeFact"></textarea><br>
+            <button id="myEditNodeSave">Save</button>
+            <button id="myEditNodeCancel">Cancel</button>
+        </div>
+
+        <div id="myAddNodeDialog" class="my-dialog" style="display: none;">
+            <div class="my-movable-dialog-header">Add New Node</div>
+            <label for="myNewNodeName">Node Name:</label>
+            <input type="text" id="myNewNodeName"><br>
+            <label for="myNewNodeParentId">Parent ID:</label>
+            <input type="text" id="myNewNodeParentId" readonly><br>
+            <label for="myNewNodeFact">Fact:</label>
+            <textarea id="myNewNodeFact"></textarea><br>
+            <label for="myGenerateLoopNumber">Generate N nodes (LLM):</label>
+            <input type="number" id="myGenerateLoopNumber" value="1" min="1"><br>
+            <button id="myGenerateNodeButton">Generate Node(s)</button>
+            <button id="myAddNodeSaveButton">Save Manual Node</button>
+            <button id="myAddNodeCancelButton">Cancel</button>
+        </div>
+
+        <div id="myAddLineDialog" class="my-dialog" style="display: none;">
+            <div class="my-movable-dialog-header">Add Line (Connection)</div>
+            <p>Selected nodes will be connected. Enter a joining fact if desired.</p>
+            <label for="myJoiningFact">Joining Fact:</label>
+            <input type="text" id="myJoiningFact"><br>
+            <button id="myAddLineSaveButton">Add Line</button>
+            <button id="myAddLineCancelButton">Cancel</button>
+        </div>
+
+        </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+</html>
