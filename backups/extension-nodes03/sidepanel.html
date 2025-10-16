@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Graph Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            background-color: #f4f4f4;
+            color: #333;
+            overflow-x: hidden;
+        }
+        .myButton, .myD3Button {
+            padding: 8px 10px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e0e0e0;
+            display: inline-block;
+            font-size: 0.85em;
+            box-sizing: border-box; /* Include padding/border in element's total width/height */
+        }
+        .myButton:hover, .myD3Button:hover { background-color: #d0d0d0; }
+        .myButton:disabled { cursor: not-allowed; opacity: 0.5; }
+        .myTextarea {
+            width: 98%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .myStatus {
+            font-family: monospace;
+            background-color: #e9e9e9;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        /* D3.js Styling - kept simple as requested */
+        .node circle { cursor: pointer; }
+        .link { fill: none; stroke: #ccc; stroke-width: 1.5px; }
+        .arbitrary-link { fill: none; stroke: #5d5d5d; stroke-width: 2.5px; }
+        .line-text { fill: #555; font-family: sans-serif; font-size: 10px; }
+        .node.selected circle { fill: crimson !important; }
+        #mySvgContainer {
+            width: 100%;
+            height: 300px; 
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            background-color: white; /* Added for clarity */
+        }
+        /* Movable Dialog Styles */
+        .my-movable-dialog {
+            position: absolute;
+            z-index: 999;
+            background-color: #f9f9f9;
+            border: 1px solid #aaa;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            top: 50px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            display: none;
+            width: 90%;
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+        .my-movable-dialog-header {
+            cursor: grab;
+            padding: 5px;
+            background-color: #ddd;
+            text-align: center;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        /* Helper class for buttons that align next to an input */
+        .myInlineInput {
+             width: 50px; 
+             display: inline-block; 
+             margin-right: 5px;
+             text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h3 style="margin-top: 0;">Graph Generator</h3>
+    
+    <div id="myDiv01" class="myStatus">...</div>
+    <button id="myLoadButton" class="myButton">Load AI</button>
+    <button id="myStreamButton" class="myButton">Generate Graph</button>
+    <button id="mySaveButton" class="myButton" disabled>Save Raw JSON</button>
+    <br>
+    
+    <button id="myGrabPageTextButton" class="myButton">Grab Page Text</button>
+    <button id="myGrabSelectedTextButton" class="myButton">Grab Selected Text</button>
+    
+    <textarea id="myInputPrompt" class="myTextarea" rows="4" placeholder="Paste your text or use the extension context menu to populate this..."></textarea>
+    <textarea id="myOutput" class="myTextarea" rows="6" readonly style="font-size: 0.7em;"></textarea>
+
+    <hr style="margin: 10px 0;">
+
+    <h3 style="margin-bottom: 5px;">D3.js Controls</h3>
+    
+    <input type="file" id="myFileLoad" style="display: none;">
+    <button id="myLoadFileButton" class="myD3Button">Load JSON</button>
+    
+    <button id="mySaveDataButton" class="myD3Button">Save Graph</button>
+    <button id="myShowAddNodeButton" class="myD3Button">Add Node</button>
+    <button id="myEditNodeButton" class="myD3Button">Edit Node</button>
+    <button id="myShowAddLineButton" class="myD3Button">Add Line</button>
+    <button id="myDeleteSelectedButton" class="myD3Button">Delete</button>
+    <button id="myFitToScreenButton" class="myD3Button">Fit Screen</button>
+    
+    <select id="myLayoutSelector" class="myButton">
+        <option value="tree">Tree Layout</option>
+        <option value="cluster">Cluster Layout</option>
+        <option value="personal">Personal Layout</option>
+        <option value="radial">Radial</option>
+    </select>
+    
+    <div id="myShowDiv" style="font-size: 0.8em; color: green; margin-top: 5px;">...</div>
+
+    <svg id="mySvgContainer"></svg>
+
+    <div id="myAddNodeDialog" class="my-movable-dialog">
+        <div id="myAddNodeDialogHeader" class="my-movable-dialog-header"><h3>Add New Node</h3></div>
+        <input type="text" id="myNewNodeName" placeholder="Node Name" title="Title for the node" class="myTextarea">
+        <input type="text" id="myNewNodeParentId" readonly placeholder="Parent ID" title="The selected node ID number" class="myTextarea">
+        <input type="text" id="myNewNodeFact" placeholder="Fact (optional)" title="Fact with the title" class="myTextarea">
+        
+        <button id="myAddGenerateNodeButton" class="myD3Button" title="LLM Generate Title and or fact">Generate</button>
+        <input type="number" id="myGenerateLoopNumber" value="1" title="How many titles and facts to generatte" class="myInlineInput">
+        <button id="myAddNewNodeButton" class="myD3Button" title="Manually Add the Information">Add</button>
+        <button id="myCancelAddNodeButton" class="myD3Button">Cancel</button>
+    </div>
+
+    <div id="myAddLineDialog" class="my-movable-dialog">
+        <div id="myAddLineDialogHeader" class="my-movable-dialog-header"><h3>Add New Line</h3></div>
+        <p style="font-size: 0.9em; margin: 5px 0;">Select two nodes on the graph first.</p>
+        <input type="text" id="myJoiningFact" placeholder="Joining Fact (optional)" class="myTextarea">
+        <button id="myAddLineWithFactButton" class="myD3Button">Add</button>
+        <button id="myCancelAddLineButton" class="myD3Button">Cancel</button>
+    </div>
+
+    <div id="myEditNodeDialog" class="my-movable-dialog">
+        <div id="myEditNodeDialogHeader" class="my-movable-dialog-header"><h3>Edit Node</h3></div>
+        <label for="myEditNodeName" style="font-size: 0.9em;">Node Name:</label>
+        <input type="text" id="myEditNodeName" required class="myTextarea">
+        <label for="myEditNodeFact" style="font-size: 0.9em;">Fact:</label>
+        <textarea id="myEditNodeFact" rows="3" class="myTextarea"></textarea>
+        <button id="mySaveEditedNodeButton" class="myD3Button">Save</button>
+        <button id="myCancelEditNodeButton" class="myD3Button">Cancel</button>
+    </div>
+    
+    <script src="mySidePanel.js"></script>
+</body>
+</html>
