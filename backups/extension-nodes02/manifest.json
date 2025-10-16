@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Content Extractor-v1.3.23",
-  "version": "1.3.23",
-  "description": "Extracts page content and summarizes it, with a Vis.js timeline.",
+  "name": "Node Extractor-v1.0.2",
+  "version": "1.0.2",
+  "description": "Extracts page content and summarizes it, with a D3.js nodes.",
 
   "permissions": [
     "activeTab",
@@ -45,8 +45,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "vis-timeline.min.js",
-        "vis-timeline.min.css",
+        "d3js.min.js",
         "mySidePanel.js"
       ],
       "matches": ["<all_urls>"]
