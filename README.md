@@ -27,7 +27,7 @@ https://github.com/hpssjellis/chrome-extension-llm-visual-nodes/tree/main
 
 
 [https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB
-![built-in-ai-wifi-chat](https://img.youtube.com/e4_nojwWNfA/0.jpg)](https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB)
+![Chrome Extension LLM Visual Nodes](https://img.youtube.com/e4_nojwWNfA/0.jpg)](https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB)
 
 
 
