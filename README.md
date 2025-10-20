@@ -21,3 +21,18 @@ https://github.com/hpssjellis/chrome-extension-llm-visual-nodes/tree/main
 7. Open a webpage with information on it and load your new extension.
 8. See if the buttons extract data from the page using chrome built in AI
 
+
+
+
+
+
+[https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB
+![built-in-ai-wifi-chat](https://img.youtube.com/e4_nojwWNfA/0.jpg)](https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB)
+
+
+
+
+
+
+
+
