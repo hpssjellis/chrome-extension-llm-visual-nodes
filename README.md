@@ -34,5 +34,12 @@ https://github.com/hpssjellis/chrome-extension-llm-visual-nodes/tree/main
 
 
 
+[https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB
+![built-in-ai-wifi-chat](https://img.youtube.com/vi/e4_nojwWNfA/0.jpg)](https://www.youtube.com/watch?v=e4_nojwWNfA&list=PL57Dnr1H_egsvfrvJdJdeVPaHVmy87S0i&index=1&pp=iAQB)
+
+
+
+
+
 
 
